@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">添加产品</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('products') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>
+            返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">产品信息</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="productForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="series" class="form-label">产品系列 *</label>
+                            <select class="form-select" id="series" name="series" required>
+                                <option value="">请选择系列</option>
+                                <option value="Zina">Zina</option>
+                                <option value="Wivor">Wivor</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="spu" class="form-label">SPU *</label>
+                            <input type="text" class="form-control" id="spu" name="spu" required placeholder="例: HSR170">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="sku" class="form-label">SKU *</label>
+                        <input type="text" class="form-control" id="sku" name="sku" required placeholder="例: HSR170W01">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="file_control" class="form-label">文件受控状态 *</label>
+                            <select class="form-select" id="file_control" name="file_control" required>
+                                <option value="">请选择状态</option>
+                                <option value="已受控">已受控</option>
+                                <option value="未受控">未受控</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="standardization" class="form-label">标准化落地状态 *</label>
+                            <select class="form-select" id="standardization" name="standardization" required>
+                                <option value="">请选择状态</option>
+                                <option value="已落地">已落地</option>
+                                <option value="未落地">未落地</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('products') }}" class="btn btn-secondary me-md-2">取消</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            保存产品
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 表单验证
+document.getElementById('productForm').addEventListener('submit', function(e) {
+    const requiredFields = ['series', 'spu', 'sku', 'file_control', 'standardization'];
+    let isValid = true;
+
+    requiredFields.forEach(field => {
+        const element = document.getElementById(field);
+        if (!element.value.trim()) {
+            element.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            element.classList.remove('is-invalid');
+        }
+    });
+
+    if (!isValid) {
+        e.preventDefault();
+        alert('请填写所有必填字段');
+    }
+});
+
+// 自动生成SKU建议
+document.getElementById('spu').addEventListener('input', function() {
+    const spu = this.value;
+    const skuField = document.getElementById('sku');
+    if (spu && !skuField.value) {
+        skuField.placeholder = `例: ${spu}W01, ${spu}B01, ${spu}G01`;
+    }
+});
+</script>
+{% endblock %}

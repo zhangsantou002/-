@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">产品管理</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('add_product') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>
+            添加产品
+        </a>
+    </div>
+</div>
+
+<!-- 搜索和筛选 -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <input type="text" class="form-control" id="searchInput" placeholder="搜索产品...">
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="seriesFilter">
+            <option value="">所有系列</option>
+            <option value="Zina">Zina</option>
+            <option value="Wivor">Wivor</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="statusFilter">
+            <option value="">所有状态</option>
+            <option value="已受控">已受控</option>
+            <option value="未受控">未受控</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+            <i class="fas fa-times me-1"></i>
+            清除筛选
+        </button>
+    </div>
+</div>
+
+<!-- 产品表格 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="productsTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>系列</th>
+                        <th>SPU</th>
+                        <th>SKU</th>
+                        <th>文件受控</th>
+                        <th>标准化落地</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.id }}</td>
+                        <td>
+                            <span class="badge bg-{% if product.series == 'Zina' %}primary{% else %}success{% endif %}">
+                                {{ product.series }}
+                            </span>
+                        </td>
+                        <td>{{ product.spu }}</td>
+                        <td><strong>{{ product.sku }}</strong></td>
+                        <td>
+                            <span class="badge bg-{% if product.file_control == '已受控' %}success{% else %}warning{% endif %}">
+                                {{ product.file_control }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if product.standardization == '已落地' %}info{% else %}secondary{% endif %}">
+                                {{ product.standardization }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('edit_product', id=product.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct({{ product.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// 搜索功能
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    filterTable();
+});
+
+document.getElementById('seriesFilter').addEventListener('change', function() {
+    filterTable();
+});
+
+document.getElementById('statusFilter').addEventListener('change', function() {
+    filterTable();
+});
+
+function filterTable() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const seriesFilter = document.getElementById('seriesFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const table = document.getElementById('productsTable');
+    const rows = table.getElementsByTagName('tr');
+    
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let showRow = true;
+        
+        // 搜索过滤
+        if (searchTerm) {
+            const rowText = row.textContent.toLowerCase();
+            if (!rowText.includes(searchTerm)) {
+                showRow = false;
+            }
+        }
+        
+        // 系列过滤
+        if (seriesFilter && showRow) {
+            const seriesCell = cells[1].textContent.trim();
+            if (!seriesCell.includes(seriesFilter)) {
+                showRow = false;
+            }
+        }
+        
+        // 状态过滤
+        if (statusFilter && showRow) {
+            const statusCell = cells[4].textContent.trim();
+            if (!statusCell.includes(statusFilter)) {
+                showRow = false;
+            }
+        }
+        
+        row.style.display = showRow ? '' : 'none';
+    }
+}
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('seriesFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    filterTable();
+}
+
+function deleteProduct(id) {
+    if (confirm('确定要删除这个产品吗？')) {
+        window.location.href = '/delete_product/' + id;
+    }
+}
+</script>
+{% endblock %}

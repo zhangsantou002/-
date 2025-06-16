@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">编辑产品</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('products') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>
+            返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">编辑产品信息</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="editProductForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="series" class="form-label">产品系列 *</label>
+                            <select class="form-select" id="series" name="series" required>
+                                <option value="">请选择系列</option>
+                                <option value="Zina" {% if product.series == 'Zina' %}selected{% endif %}>Zina</option>
+                                <option value="Wivor" {% if product.series == 'Wivor' %}selected{% endif %}>Wivor</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="spu" class="form-label">SPU *</label>
+                            <input type="text" class="form-control" id="spu" name="spu" required value="{{ product.spu }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sku" class="form-label">SKU *</label>
+                        <input type="text" class="form-control" id="sku" name="sku" required value="{{ product.sku }}">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="file_control" class="form-label">文件受控状态 *</label>
+                            <select class="form-select" id="file_control" name="file_control" required>
+                                <option value="">请选择状态</option>
+                                <option value="已受控" {% if product.file_control == '已受控' %}selected{% endif %}>已受控</option>
+                                <option value="未受控" {% if product.file_control == '未受控' %}selected{% endif %}>未受控</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="standardization" class="form-label">标准化落地状态 *</label>
+                            <select class="form-select" id="standardization" name="standardization" required>
+                                <option value="">请选择状态</option>
+                                <option value="已落地" {% if product.standardization == '已落地' %}selected{% endif %}>已落地</option>
+                                <option value="未落地" {% if product.standardization == '未落地' %}selected{% endif %}>未落地</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('products') }}" class="btn btn-secondary me-md-2">取消</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            更新产品
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 产品历史记录卡片 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">产品详情</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>产品ID:</strong> {{ product.id }}</p>
+                        <p><strong>创建时间:</strong> <span class="text-muted">系统记录</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>当前状态组合:</strong></p>
+                        <div>
+                            <span class="badge bg-{% if product.file_control == '已受控' %}success{% else %}warning{% endif %} me-2">
+                                {{ product.file_control }}
+                            </span>
+                            <span class="badge bg-{% if product.standardization == '已落地' %}info{% else %}secondary{% endif %}">
+                                {{ product.standardization }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 表单验证
+document.getElementById('editProductForm').addEventListener('submit', function(e) {
+    const requiredFields = ['series', 'spu', 'sku', 'file_control', 'standardization'];
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        const element = document.getElementById(field);
+        if (!element.value.trim()) {
+            element.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            element.classList.remove('is-invalid');
+        }
+    });
+    
+    if (!isValid) {
+        e.preventDefault();
+        alert('请填写所有必填字段');
+    }
+});
+
+// 实时状态预览
+document.getElementById('file_control').addEventListener('change', updateStatusPreview);
+document.getElementById('standardization').addEventListener('change', updateStatusPreview);
+
+function updateStatusPreview() {
+    const fileControl = document.getElementById('file_control').value;
+    const standardization = document.getElementById('standardization').value;
+    
+    if (fileControl && standardization) {
+        let statusClass1 = fileControl === '已受控' ? 'success' : 'warning';
+        let statusClass2 = standardization === '已落地' ? 'info' : 'secondary';
+        
+        // 可以在这里添加状态预览逻辑
+        console.log(`状态组合: ${fileControl} + ${standardization}`);
+    }
+}
+</script>
+{% endblock %}
