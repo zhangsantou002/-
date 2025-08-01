@@ -6,8 +6,13 @@ import json
 import pandas as pd
 
 # 导入工艺流程相关模块
-from models import db as workflow_db
-from workflow_api import workflow_bp
+try:
+    from models import db as workflow_db
+    from workflow_api import workflow_bp
+    WORKFLOW_ENABLED = True
+except ImportError:
+    WORKFLOW_ENABLED = False
+    print("⚠️ 工艺流程模块未找到，将以基础模式运行")
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///product_status.db'
@@ -15,7 +20,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # 注册工艺流程API蓝图
-app.register_blueprint(workflow_bp)
+if WORKFLOW_ENABLED:
+    app.register_blueprint(workflow_bp)
 
 
 # 数据模型
@@ -42,8 +48,9 @@ class Product(db.Model):
 with app.app_context():
     db.create_all()
     # 初始化工艺流程数据库
-    workflow_db.init_app(app)
-    workflow_db.create_all()
+    if WORKFLOW_ENABLED:
+        workflow_db.init_app(app)
+        workflow_db.create_all()
 
     # 初始化示例数据
     if Product.query.count() == 0:
