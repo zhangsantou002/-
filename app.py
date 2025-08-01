@@ -3,12 +3,26 @@ from flask_sqlalchemy import SQLAlchemy
 import plotly.graph_objs as go
 import plotly.utils
 import json
-import pandas as pd
+# import pandas as pd  # 暂时注释掉避免版本兼容问题
+
+# 导入工艺流程相关模块
+try:
+    import models
+    from workflow_api import workflow_bp
+    WORKFLOW_ENABLED = True
+except ImportError:
+    WORKFLOW_ENABLED = False
+    print("⚠️ 工艺流程模块未找到，将以基础模式运行")
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///product_status.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# 初始化工艺流程模块的数据库
+if WORKFLOW_ENABLED:
+    models.init_db(db)
+    app.register_blueprint(workflow_bp)
 
 
 # 数据模型
@@ -34,6 +48,7 @@ class Product(db.Model):
 # 创建数据库表
 with app.app_context():
     db.create_all()
+    # 注意：workflow_db 使用同一个db实例，不需要重复初始化
 
     # 初始化示例数据
     if Product.query.count() == 0:
@@ -315,6 +330,16 @@ def batch_update():
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+@app.route('/workflow-designer')
+def workflow_designer():
+    """工艺流程设计器页面"""
+    return render_template('workflow_designer.html')
+
+@app.route('/cost-analysis')
+def cost_analysis():
+    """成本分析报表页面"""
+    return render_template('cost_analysis.html')
 
 
 if __name__ == '__main__':
