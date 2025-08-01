@@ -5,10 +5,17 @@ import plotly.utils
 import json
 import pandas as pd
 
+# 导入工艺流程相关模块
+from models import db as workflow_db
+from workflow_api import workflow_bp
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///product_status.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# 注册工艺流程API蓝图
+app.register_blueprint(workflow_bp)
 
 
 # 数据模型
@@ -34,6 +41,9 @@ class Product(db.Model):
 # 创建数据库表
 with app.app_context():
     db.create_all()
+    # 初始化工艺流程数据库
+    workflow_db.init_app(app)
+    workflow_db.create_all()
 
     # 初始化示例数据
     if Product.query.count() == 0:
@@ -315,6 +325,16 @@ def batch_update():
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+
+@app.route('/workflow-designer')
+def workflow_designer():
+    """工艺流程设计器页面"""
+    return render_template('workflow_designer.html')
+
+@app.route('/cost-analysis')
+def cost_analysis():
+    """成本分析报表页面"""
+    return render_template('cost_analysis.html')
 
 
 if __name__ == '__main__':
