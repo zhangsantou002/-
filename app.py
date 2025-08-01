@@ -3,11 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 import plotly.graph_objs as go
 import plotly.utils
 import json
-import pandas as pd
+# import pandas as pd  # 暂时注释掉避免版本兼容问题
 
 # 导入工艺流程相关模块
 try:
-    from models import db as workflow_db
+    import models
     from workflow_api import workflow_bp
     WORKFLOW_ENABLED = True
 except ImportError:
@@ -19,8 +19,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///product_status.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# 注册工艺流程API蓝图
+# 初始化工艺流程模块的数据库
 if WORKFLOW_ENABLED:
+    models.init_db(db)
     app.register_blueprint(workflow_bp)
 
 
@@ -47,10 +48,7 @@ class Product(db.Model):
 # 创建数据库表
 with app.app_context():
     db.create_all()
-    # 初始化工艺流程数据库
-    if WORKFLOW_ENABLED:
-        workflow_db.init_app(app)
-        workflow_db.create_all()
+    # 注意：workflow_db 使用同一个db实例，不需要重复初始化
 
     # 初始化示例数据
     if Product.query.count() == 0:

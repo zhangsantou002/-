@@ -3,7 +3,13 @@ from datetime import datetime
 import json
 from enum import Enum
 
-db = SQLAlchemy()
+# 使用app.py中已创建的db实例
+db = None
+
+def init_db(app_db):
+    """初始化数据库实例"""
+    global db
+    db = app_db
 
 class ProcessStatus(Enum):
     DRAFT = "draft"
